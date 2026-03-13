@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | Cloud Habit Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      margin: 0;
+      color: #111827;
+    }
+    .wrapper {
+      max-width: 860px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 16px;
+    }
+    .topbar h1 {
+      margin: 0;
+    }
+    .subtitle {
+      color: #6b7280;
+      margin-top: 8px;
+      margin-bottom: 24px;
+    }
+    .nav-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .nav-btn {
+      text-decoration: none;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+    .admin-btn {
+      background: #2563eb;
+    }
+    .logout-btn {
+      background: #ef4444;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      padding: 24px;
+    }
+    .add-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .add-row input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+    }
+    .add-row button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 10px;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+    .habit-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .habit-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      background: #fafafa;
+      gap: 12px;
+    }
+    .habit-name {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .habit-meta {
+      color: #6b7280;
+      margin-top: 6px;
+      font-size: 14px;
+    }
+    .streak-badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #fff7ed;
+      color: #c2410c;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .actions button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+    }
+    .done-btn {
+      background: #22c55e;
+      color: white;
+    }
+    .delete-btn {
+      background: #ef4444;
+      color: white;
+    }
+    .empty {
+      color: #6b7280;
+      text-align: center;
+      padding: 32px 12px;
+      border: 1px dashed #d1d5db;
+      border-radius: 14px;
+      background: #f9fafb;
+    }
+    .empty-title {
+      font-size: 18px;
+      color: #111827;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .suggestions {
+      margin-top: 14px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .suggestion-chip {
+      border: 1px solid #d1d5db;
+      background: white;
+      border-radius: 999px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .demo-note {
+      margin-top: 18px;
+      font-size: 13px;
+      color: #6b7280;
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    @media (max-width: 640px) {
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .habit-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .actions {
+        width: 100%;
+      }
+      .actions button {
+        flex: 1;
+      }
+      .add-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="topbar">
+      <div>
+        <h1>Cloud Habit Tracker</h1>
+        <div class="subtitle">Welcome, {{ username }}. Track your goals one day at a time.</div>
+      </div>
+      <div class="nav-actions">
+        {% if is_admin %}
+          <a class="nav-btn admin-btn" href="{{ url_for('admin_panel') }}">Admin</a>
+        {% endif %}
+        <a class="nav-btn logout-btn" href="{{ url_for('logout') }}">Logout</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="add-row">
+        <input id="habitInput" type="text" placeholder="Add a new habit" />
+        <button onclick="addHabit()">Add</button>
+      </div>
+
+      <ul id="habitList" class="habit-list"></ul>
+
+      <div id="emptyState" class="empty" style="display:none;">
+        <div class="empty-title">No habits yet</div>
+        <div>Start by adding your first cloud habit and keep your learning streak alive.</div>
+
+        <div class="suggestions">
+          <button class="suggestion-chip" onclick="fillSuggestion('Learn Docker')">Learn Docker</button>
+          <button class="suggestion-chip" onclick="fillSuggestion('Study AWS')">Study AWS</button>
+          <button class="suggestion-chip" onclick="fillSuggestion('Practice Linux')">Practice Linux</button>
+        </div>
+      </div>
+
+      <div class="demo-note">
+        Demo idea: try adding <strong>Finish Students Community Day Lab</strong> during the presentation.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function loadHabits() {
+      const res = await fetch("/habits");
+      const habits = await res.json();
+
+      const list = document.getElementById("habitList");
+      const emptyState = document.getElementById("emptyState");
+
+      list.innerHTML = "";
+
+      if (!habits.length) {
+        emptyState.style.display = "block";
+        return;
+      }
+
+      emptyState.style.display = "none";
+
+      habits.forEach(habit => {
+        const item = document.createElement("li");
+        item.className = "habit-item";
+
+        const streakLabel = habit.streak === 1 ? "1 day" : `${habit.streak} days`;
+
+        item.innerHTML = `
+          <div>
+            <div class="habit-name">${habit.name}</div>
+            <div class="habit-meta">Keep going and build consistency.</div>
+            <div class="streak-badge">🔥 ${streakLabel}</div>
+          </div>
+          <div class="actions">
+            <button class="done-btn" onclick="checkHabit(${habit.id})">Done</button>
+            <button class="delete-btn" onclick="deleteHabit(${habit.id}, '${habit.name.replace(/'/g, "\\'")}')">Delete</button>
+          </div>
+        `;
+
+        list.appendChild(item);
+      });
+    }
+
+    async function addHabit() {
+      const input = document.getElementById("habitInput");
+      const name = input.value.trim();
+
+      if (!name) return;
+
+      const res = await fetch("/habits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name })
+      });
+
+      if (res.ok) {
+        input.value = "";
+        loadHabits();
+      }
+    }
+
+    async function checkHabit(id) {
+      const res = await fetch(`/habits/${id}/check`, { method: "POST" });
+      if (res.ok) {
+        loadHabits();
+      }
+    }
+
+    async function deleteHabit(id, name) {
+      const confirmed = confirm(`Delete habit "${name}"?`);
+      if (!confirmed) return;
+
+      const res = await fetch(`/habits/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        loadHabits();
+      }
+    }
+
+    function fillSuggestion(value) {
+      document.getElementById("habitInput").value = value;
+      document.getElementById("habitInput").focus();
+    }
+
+    loadHabits();
+  </script>
+</body>
+</html>

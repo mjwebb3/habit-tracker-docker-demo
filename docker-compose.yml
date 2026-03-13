@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  habit-tracker:
+    build: .
+    container_name: habit-tracker
+    ports:
+      - "8080:5000"
+    environment:
+      SECRET_KEY: "local-demo-secret"
+      ENABLE_DEMO_RESET: "true"
+    volumes:
+      - ./instance:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

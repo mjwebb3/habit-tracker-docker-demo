@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel | Cloud Habit Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      margin: 0;
+      color: #111827;
+    }
+    .wrapper {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .topbar h1 {
+      margin: 0;
+    }
+    .actions-top {
+      display: flex;
+      gap: 10px;
+    }
+    .btn {
+      text-decoration: none;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      color: white;
+      font-size: 14px;
+    }
+    .btn-blue { background: #2563eb; }
+    .btn-red { background: #ef4444; }
+    .btn-gray { background: #6b7280; }
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: top;
+    }
+    th {
+      background: #f9fafb;
+    }
+    input {
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      width: 180px;
+    }
+    .flash {
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    .flash.error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    .flash.success {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: #e5e7eb;
+    }
+    .badge.admin {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="topbar">
+      <div>
+        <h1>Admin Panel</h1>
+        <p>Manage users and reset demo data.</p>
+      </div>
+      <div class="actions-top">
+        <a class="btn btn-gray" href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a class="btn btn-red" href="{{ url_for('logout') }}">Logout</a>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="card">
+      <h3>Demo controls</h3>
+      <p>Default admin: <strong>admin@demo.com</strong> / <strong>PruebaTestA</strong></p>
+      <p>Default demo: <strong>user@demo.com</strong> / <strong>PruebaTestE</strong></p>
+
+      <form method="POST" action="{{ url_for('admin_reset_demo') }}">
+        <button class="btn btn-blue" type="submit">Reset demo user and habits</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>Users</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>User</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Habits</th>
+            <th>Created</th>
+            <th>Reset password</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td>
+              {% if user.is_admin %}
+                <span class="badge admin">Admin</span>
+              {% else %}
+                <span class="badge">User</span>
+              {% endif %}
+            </td>
+            <td>{{ user.habit_count }}</td>
+            <td>{{ user.created_at }}</td>
+            <td>
+              <form method="POST" action="{{ url_for('admin_reset_password') }}">
+                <input type="hidden" name="user_id" value="{{ user.id }}" />
+                <input type="text" name="new_password" placeholder="New password" required />
+                <button class="btn btn-blue" type="submit">Update</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
